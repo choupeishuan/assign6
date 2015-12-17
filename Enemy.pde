@@ -21,14 +21,18 @@ class Enemy{
 		image(enemyImg, x, y);
 	}
 
-	boolean isCollideWithFighter()
-	{
-		return false;
+	boolean isCollideWithFighter(Fighter f)	{
+ if( f.x<this.x+this.enemyImg.width && f.x+51>this.x && f.y<this.y+this.enemyImg.height && f.y+51>this.y){
+  return true;
+}
+  return( f.x<this.x+this.enemyImg.width && f.x+51>this.x && f.y<this.y+this.enemyImg.height && f.y+51>this.y);
 	}
 
-	boolean isOutOfBorder()
-	{
-		return false;
+	boolean isOutOfBorder()	{
+  if(this.x>width){
+    return true;
+  }
+  return(this.x>width);
 	}
 
 
