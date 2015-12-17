@@ -75,7 +75,7 @@ void draw()
 			if (enemys[i]!= null) {
 				enemys[i].move();
 				enemys[i].draw();
-				if (enemys[i].isCollideWithFighter()) {
+				if (enemys[i].isCollideWithFighter(fighter)) {
 					fighter.hpValueChange(-20);
 					flameMgr.addFlame(enemys[i].x, enemys[i].y);
 					enemys[i]=null;
@@ -86,6 +86,7 @@ void draw()
 			}
 		}
 		// 這地方應該加入Fighter 血量顯示UI
+hpDisplay.updateWithFighterHP (fighter.hp);
 		
 	}
 	else if (state == GameState.END) {
@@ -136,4 +137,3 @@ void keyReleased(){
     }
   }
 }
-
