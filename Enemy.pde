@@ -1,139 +1,109 @@
-class GameState
-{
-	static final int START = 0;
-	static final int PLAYING = 1;
-	static final int END = 2;
-}
-class Direction
-{
-	static final int LEFT = 0;
-	static final int RIGHT = 1;
-	static final int UP = 2;
-	static final int DOWN = 3;
-}
-class EnemysShowingType
-{
-	static final int STRAIGHT = 0;
-	static final int SLOPE = 1;
-	static final int DIAMOND = 2;
-	static final int STRONGLINE = 3;
-}
-class FlightType
-{
-	static final int FIGHTER = 0;
-	static final int ENEMY = 1;
-	static final int ENEMYSTRONG = 2;
-}
+class Enemy{
+	int x = 0;
+	int y = 0;
+	int type;
+	int speed = 5;
 
-int state = GameState.START;
-int currentType = EnemysShowingType.STRAIGHT;
-int enemyCount = 8;
-Enemy[] enemys = new Enemy[enemyCount];
-Fighter fighter;
-Background bg;
-FlameMgr flameMgr;
-Treasure treasure;
-HPDisplay hpDisplay;
-
-boolean isMovingUp;
-boolean isMovingDown;
-boolean isMovingLeft;
-boolean isMovingRight;
-
-int time;
-int wait = 4000;
-
-
-
-void setup () {
-	size(640, 480);
-	flameMgr = new FlameMgr();
-	bg = new Background();
-	treasure = new Treasure();
-	hpDisplay = new HPDisplay();
-	fighter = new Fighter(20);
-}
-
-void draw()
-{
-	if (state == GameState.START) {
-		bg.draw();	
-	}
-	else if (state == GameState.PLAYING) {
-		bg.draw();
-		treasure.draw();
-		flameMgr.draw();
-		fighter.draw();
-
-		//enemys
-		if(millis() - time >= wait){
-			addEnemy(currentType++);
-			currentType = currentType%4;
-		}		
-
-		for (int i = 0; i < enemyCount; ++i) {
-			if (enemys[i]!= null) {
-				enemys[i].move();
-				enemys[i].draw();
-				if (enemys[i].isCollideWithFighter(fighter)) {
-					fighter.hpValueChange(-20);
-					flameMgr.addFlame(enemys[i].x, enemys[i].y);
-					enemys[i]=null;
-				}
-				else if (enemys[i].isOutOfBorder()) {
-					enemys[i]=null;
-				}
-			}
-		}
-		// 這地方應該加入Fighter 血量顯示UI
-hpDisplay.updateWithFighterHP (fighter.hp);
+	PImage enemyImg;
+	Enemy(int x, int y, int type) {
+		this.x = x;
+		this.y = y;
+		this.type = type;
+		enemyImg = loadImage("img/enemy.png");
 		
 	}
-	else if (state == GameState.END) {
-		bg.draw();
+	void move() {
+		this.x+= 5;	
 	}
+
+	void draw()
+	{
+		image(enemyImg, x, y);
+	}
+
+	boolean isCollideWithFighter(Fighter f)	{
+ if( f.x<this.x+this.enemyImg.width && f.x+51>this.x && f.y<this.y+this.enemyImg.height && f.y+51>this.y){
+  return true;
 }
-boolean isHit(int ax, int ay, int aw, int ah, int bx, int by, int bw, int bh)
-{
-	// Collision x-axis?
-    boolean collisionX = (ax + aw >= bx) && (bx + bw >= ax);
-    // Collision y-axis?
-    boolean collisionY = (ay + ah >= by) && (by + bh >= ay);
-    return collisionX && collisionY;
+  return( f.x<this.x+this.enemyImg.width && f.x+51>this.x && f.y<this.y+this.enemyImg.height && f.y+51>this.y);
+	}
+
+	boolean isOutOfBorder()	{
+  if(this.x>width){
+    return true;
+  }
+  return(this.x>width);
+	}
+
+
 }
 
-void keyPressed(){
-  switch(keyCode){
-    case UP : isMovingUp = true ;break ;
-    case DOWN : isMovingDown = true ; break ;
-    case LEFT : isMovingLeft = true ; break ;
-    case RIGHT : isMovingRight = true ; break ;
-    default :break ;
-  }
-}
-void keyReleased(){
-  switch(keyCode){
-	case UP : isMovingUp = false ;break ;
-    case DOWN : isMovingDown = false ; break ;
-    case LEFT : isMovingLeft = false ; break ;
-    case RIGHT : isMovingRight = false ; break ;
-    default :break ;
-  }
-  if (key == ' ') {
-  	if (state == GameState.PLAYING) {
-		fighter.shoot();
+void addEnemy(int type)
+{	
+	for (int i = 0; i < enemyCount; ++i) {
+		enemys[i] = null;
 	}
-  }
-  if (key == ENTER) {
-    switch(state) {
-      case GameState.START:
-      case GameState.END:
-        state = GameState.PLAYING;
-		enemys = new Enemy[enemyCount];
-		flameMgr = new FlameMgr();
-		treasure = new Treasure();
-		fighter = new Fighter(20);
-      default : break ;
-    }
-  }
+	switch (type) {
+		case EnemysShowingType.STRAIGHT:
+			addStraightEnemy();
+			break;
+		case EnemysShowingType.SLOPE:
+			addSlopeEnemy();
+			break;
+		case EnemysShowingType.DIAMOND:
+			addDiamondEnemy();
+			break;
+		case EnemysShowingType.STRONGLINE:
+			addEnemyStrong();
+			break;
+	}
+	time = millis();
+}
+
+void addStraightEnemy()
+{
+	float t = random(height - 60);
+	int h = int(t);
+	for (int i = 0; i < 5; ++i) {
+		enemys[i] = new Enemy( (i+1)*-80, h , FlightType.ENEMY);
+	}
+}
+void addSlopeEnemy()
+{
+	float t = random(height - 60 * 5);
+	int h = int(t);
+	for (int i = 0; i < 5; ++i) {
+		enemys[i] = new Enemy((i+1)*-80, h + i * 50 , FlightType.ENEMY);
+	}
+}
+void addDiamondEnemy()
+{
+	float t = random( 60 * 3 ,height - 60 * 3);
+	int h = int(t);
+	int x_axis = 1;
+	for (int i = 0; i < 8; ++i) {
+		if (i == 0 || i == 7) {
+			enemys[i] = new Enemy((x_axis+1)*-80, h, FlightType.ENEMY);
+			x_axis++;
+		}
+		else if (i == 1 || i == 5){
+			enemys[i] = new Enemy((x_axis+1)*-80, h + 1 * 40, FlightType.ENEMY);
+			enemys[i+1] = new Enemy((x_axis+1)*-80, h - 1 * 40, FlightType.ENEMY);
+			i++;
+			x_axis++;
+			
+		}
+		else {
+			enemys[i] = new Enemy((x_axis+1)*-80, h + 2 * 40, FlightType.ENEMY);
+			enemys[i+1] = new Enemy((x_axis+1)*-80, h - 2 * 40, FlightType.ENEMY);
+			i++;
+			x_axis++;
+		}
+	}
+}
+void addEnemyStrong()
+{
+	for (int i = 0; i < 5; ++i) {
+		enemys[i] = new Enemy(0, 40+ i * 85, FlightType.ENEMYSTRONG);
+	}
 }
